@@ -81,7 +81,15 @@ if (!isset($_SESSION['login_id'])) {
 					</tr>
 				</table>
 			</div>
-			<div class="">
+			<div id="input">
+				<form class="form-inline">
+					<input type="hidden" id="currentSelectedId" value="0">
+					<input type="text" class="form-control" id="result" name="message" placeholder="Enter your message here...">
+					&nbsp
+					<button type="button" class="btn btn-outline-primary" onclick="startConversion();"><i class="fa fa-microphone"></i> </button>
+					&nbsp
+					<button type="button" class="btn btn-outline-primary" id="send">Send <i class="fa fa-paper-plane"></i> </button>
+				</form>
 			</div>
 		</div>
 	</div>
@@ -93,6 +101,28 @@ if (!isset($_SESSION['login_id'])) {
 </body>
 <script type="text/javascript">
 	$(document).ready(function(){
+		function setCookie(cname, cvalue, exdays) {
+			var d = new Date();
+			d.setTime(d.getTime() + (exdays*24*60*60*1000));
+			var expires = "expires="+ d.toUTCString();
+			document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+		}
+		function getCookie(cname) {
+			var name = cname + "=";
+			var decodedCookie = decodeURIComponent(document.cookie);
+			var ca = decodedCookie.split(';');
+			for(var i = 0; i <ca.length; i++) {
+				var c = ca[i];
+				while (c.charAt(0) == ' ') {
+					c = c.substring(1);
+				}
+				if (c.indexOf(name) == 0) {
+					return c.substring(name.length, c.length);
+				}
+			}
+			return "";
+		}
+
 		$.post('../server/main.php', {cmd:'get_contacts'}, function(response){
 			var obj = JSON.parse(response);
 			if (obj['type'] == 'error' || obj['type'] == 'warning') {
@@ -106,39 +136,47 @@ if (!isset($_SESSION['login_id'])) {
 				$("div#contacts").html(html); 
 			}
 		});
-		$.post('../server/main.php', {cmd:'get_chats'}, function(response){
-			var obj = JSON.parse(response);
-			if (obj.length == 0) {
-				var html = '<div class="alert alert-secondary" role="alert"> Please select any contact </div>';
-				$("div#chat").html(html);
+		updateChat();
+		function updateChat() {
+			var sid = getCookie('currentSelectedId');
+			if (sid.length == 0) {
+				sid = 0;
 			}
-			else {
-				if (obj['type'] == 'error' || obj['type'] == 'warning') {
-					swal(obj['msg'],'',obj['type']);
+			$.post('../server/main.php', {cmd:'get_chats', sid:sid}, function(response){
+				var obj = JSON.parse(response);
+				if (obj.length == 0) {
+					var html = '<div class="alert alert-secondary" role="alert"> Please select any contact </div>';
+					$("div#chat").html(html);
 				}
 				else {
-					var html = '';
-					$.each(obj, function(key,value){
-						var username = "<?php echo $_SESSION['login_username'];?>";
-						if (value.username == username) {
-							username = 'You';
-						}
-						else {
-							username = value.username;
-						}
-						html += '<div class="alert alert-info" role="alert"><span class="bold">'+username+':</span> '+value.message+'</div>';
-					});
-					$("div#chat").html(html); 
+					if (obj['type'] == 'error' || obj['type'] == 'warning') {
+						swal(obj['msg'],'',obj['type']);
+					}
+					else {
+						var html = '';
+						$.each(obj, function(key,value){
+							var username = "<?php echo $_SESSION['login_username'];?>";
+							if (value.username == username) {
+								username = 'You';
+							}
+							else {
+								username = value.username;
+							}
+							html += '<div class="alert alert-info" role="alert"><span class="bold">'+username+':</span> '+value.message+'</div>';
+						});
+						$("div#chat").html(html); 
+					}
 				}
-			}
-		});
+			});
+		}
 		$("div#contacts").on("click", "button.btn-contact", function(){
 			var sid = $(this).attr('sid');
 			if (sid > 0) {
+				setCookie('currentSelectedId', sid, 1);
 				$.post('../server/main.php', {cmd:'get_chats', sid:sid}, function(response){
 					var obj = JSON.parse(response);
 					if (obj.length == 0) {
-						var html = '<div class="alert alert-secondary" role="alert"> Please select any contact </div>';
+						var html = '<div class="alert alert-secondary" role="alert"> No messages found! </div>';
 						$("div#chat").html(html);
 					}
 					else {
@@ -166,6 +204,26 @@ if (!isset($_SESSION['login_id'])) {
 				swal('Refresh', 'Contact id is missing, please reload the page!', 'warning');
 			}
 		});
+		$("button#send").on("click", function(){
+			var rid = getCookie('currentSelectedId');
+			var msg = $("input#result").val();
+			if (msg.length > 0 && rid > 0) {
+				$.post('../server/main.php', {cmd:'send_msg', rid:rid, msg:msg}, function(response){
+					console.log(response);
+					var obj = JSON.parse(response);
+					if (obj['type'] == 'error' || obj['type'] == 'warning') {
+						swal(obj['msg'],'',obj['type']);
+					}
+					else {
+						$("input#result").val('');
+						updateChat();
+					}
+				});
+			}
+			else {
+				$("input#result").focus();
+			}
+		});
 		$("button#logout").on("click", function(){
 			$.post('../server/main.php', {cmd:'logout'}, function(response){
 				var obj = JSON.parse(response);
@@ -180,5 +238,42 @@ if (!isset($_SESSION['login_id'])) {
 			});
 		});
 	});
+</script>
+<script type="text/javascript">
+
+	function startConversion() {
+
+		if ('webkitSpeechRecognition' in window) {
+			var speechRecognizer = new webkitSpeechRecognition();
+			speechRecognizer.continuous = true;
+			speechRecognizer.interimResults = true;
+			speechRecognizer.lang = 'en-IN';
+			speechRecognizer.start();
+
+			var finalTranscripts = '';
+
+			speechRecognizer.onresult = function(event) {
+				var interimTranscripts = '';
+
+				for(var i = event.resultIndex; i < event.results.length; i++) {
+					var transcript = event.results[i][0].transcript;
+					transcript.replace("\n", "<br>");
+					if (event.results[i].isFinal) {
+						finalTranscripts += transcript;
+					}
+					else {
+						interimTranscripts += transcript;
+					}
+				}
+				$("input#result").val(finalTranscripts);
+			}
+			speechRecognizer.onerror = function(event) {
+				swal('No Internet!', 'Please check your internet connection!', 'warning');
+			}
+		}
+		else {
+			swal('Use Google Chrome','Your browser does not support speech API, kindly upgrate it or try another browser!','error');
+		}
+	}
 </script>
 </html>

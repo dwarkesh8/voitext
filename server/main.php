@@ -72,6 +72,27 @@ function get_chats() {
 	}
 }
 
+function send_msg() {
+	session_start();
+	require_once('db.php');
+	$sid = $_SESSION['login_id'] ? $_SESSION['login_id'] : 0;
+	$rid = $_POST['rid'] ? $_POST['rid'] : 0;
+	$msg = $_POST['msg'] ? $_POST['msg'] : 0;
+	if ($sid > 0 && $rid > 0) {
+		$sql = "INSERT INTO chats (receiver,message,sender,status) VALUES ($rid,'{$msg}',$sid,0)";
+		$query = mysqli_query($conn, $sql);
+		if (mysqli_affected_rows($conn) == 1) {
+			echo json_encode(['msg'=>'Your message is saved','type'=>'success']);
+		}
+		else {
+			echo json_encode(['msg'=>'Could not save your message','type'=>'error']);
+		}
+	}
+	else {
+		echo json_encode(['msg'=>'Id not found','type'=>'error']);
+	}
+}
+
 function logout() {
 	session_start();
 	if (session_destroy()) {
