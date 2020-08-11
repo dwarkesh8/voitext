@@ -122,7 +122,7 @@ if (!isset($_SESSION['login_id'])) {
 			}
 			return "";
 		}
-
+		 setInterval(function(){ updateChat(); }, 10000);
 		$.post('../server/main.php', {cmd:'get_contacts'}, function(response){
 			var obj = JSON.parse(response);
 			if (obj['type'] == 'error' || obj['type'] == 'warning') {
