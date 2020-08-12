@@ -11,6 +11,11 @@ if (!isset($_SESSION['login_id'])) {
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Welcome | Voitext Chat</title>
+	<meta name="author" content="Dwarkesh Purohit">
+	<meta name="keywords" content="online chat application, voice to text chat app, web based chat application, javascript chat application, speech recognition chat application, speech recognition api, login to voitext, voitext chat application, voice to text chat application">
+	<meta name="description" content="Web based chat application developed with speech recognition javascript api, in which user can send messages by typing and also by speaking sentence.">
+	<meta property="og:image" itemprop="image primaryImageOfPage" content="https://charotaritsolutions.com/assets/img/CIS-logo.png" />
+	<link rel="shortcut icon" href="https://charotaritsolutions.com/assets/img/CIS-logo.png">
 	<link rel="stylesheet" type="text/css" href="../assets/bootstrap-4.4.1-dist/css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="../assets/fontawesome-free-5.13.0-web/css/all.min.css">
 	<style type="text/css">
@@ -64,7 +69,7 @@ if (!isset($_SESSION['login_id'])) {
 					<tr>
 						<th>Contacts</th>
 						<th>Chat</th>
-						<th><button class="btn btn-info"><?php echo isset($_SESSION['login_username']) ? $_SESSION['login_username'] : '';?></button></th>
+						<th><button class="btn btn-info">Welcome <?php echo isset($_SESSION['login_username']) ? $_SESSION['login_username'] : '';?></button></th>
 						<th><button class="btn btn-danger" id="logout">Logout</button></th>
 					</tr>
 					<tr>
@@ -122,7 +127,7 @@ if (!isset($_SESSION['login_id'])) {
 			}
 			return "";
 		}
-		 setInterval(function(){ updateChat(); }, 10000);
+		 setInterval(function(){ updateChat(); }, 5000);
 		$.post('../server/main.php', {cmd:'get_contacts'}, function(response){
 			var obj = JSON.parse(response);
 			if (obj['type'] == 'error' || obj['type'] == 'warning') {

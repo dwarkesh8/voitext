@@ -11,6 +11,11 @@ if (isset($_SESSION['login_id'])) {
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Login | Voitext Chat</title>
+	<meta name="author" content="Dwarkesh Purohit">
+	<meta name="keywords" content="online chat application, voice to text chat app, web based chat application, javascript chat application, speech recognition chat application, speech recognition api, login to voitext, voitext chat application, voice to text chat application">
+	<meta name="description" content="Web based chat application developed with speech recognition javascript api, in which user can send messages by typing and also by speaking sentence.">
+	<meta property="og:image" itemprop="image primaryImageOfPage" content="https://charotaritsolutions.com/assets/img/CIS-logo.png" />
+	<link rel="shortcut icon" href="https://charotaritsolutions.com/assets/img/CIS-logo.png">
 	<link rel="stylesheet" type="text/css" href="assets/bootstrap-4.4.1-dist/css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="assets/fontawesome-free-5.13.0-web/css/all.min.css">
 
@@ -58,6 +63,10 @@ if (isset($_SESSION['login_id'])) {
 				<button class="btn btn-outline-dark">Login</button>
 			</div>
 		</div>
+		<div class="col-md-12 mt-5" align="center">
+			<h4>Developed by @Charotar IT Solutions</h4>
+			<h6>All rights are reserved to Charotar IT Solutions</h6>
+		</div>
 	</div>
 
 
@@ -82,7 +91,7 @@ if (isset($_SESSION['login_id'])) {
 			}
 			if (username.length > 0 && password.length > 0) {
 				$.post('server/main.php', {cmd:'login', username: username, password: password}, function(response){
-			console.log(response);
+					console.log(response);
 					var obj = JSON.parse(response);
 					if (obj['type'] == 'error' || obj['type'] == 'warning') {
 						swal(obj['msg'],'',obj['type']);
