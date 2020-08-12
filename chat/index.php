@@ -68,8 +68,8 @@ if (!isset($_SESSION['login_id'])) {
 				<table class="table">
 					<tr>
 						<th>Contacts</th>
-						<th>Chat</th>
-						<th><button class="btn btn-info">Welcome <?php echo isset($_SESSION['login_username']) ? $_SESSION['login_username'] : '';?></button></th>
+						<!-- <th>Chat</th> -->
+						<th><button class="btn btn-info"><?php echo isset($_SESSION['login_username']) ? $_SESSION['login_username'] : '';?></button></th>
 						<th><button class="btn btn-danger" id="logout">Logout</button></th>
 					</tr>
 					<tr>
@@ -78,7 +78,7 @@ if (!isset($_SESSION['login_id'])) {
 								<div class="loading" class="mx-auto"></div>
 							</div>
 						</td>
-						<td width="50%" colspan="3">
+						<td width="30%" colspan="2">
 							<div id="chat">
 								<div class="loading" class="mx-auto"></div>
 							</div>
@@ -127,7 +127,7 @@ if (!isset($_SESSION['login_id'])) {
 			}
 			return "";
 		}
-		 setInterval(function(){ updateChat(); }, 5000);
+		setInterval(function(){ updateChat(); }, 5000);
 		$.post('../server/main.php', {cmd:'get_contacts'}, function(response){
 			var obj = JSON.parse(response);
 			if (obj['type'] == 'error' || obj['type'] == 'warning') {
@@ -155,7 +155,7 @@ if (!isset($_SESSION['login_id'])) {
 				}
 				else {
 					if (obj['type'] == 'error' || obj['type'] == 'warning') {
-						swal(obj['msg'],'',obj['type']);
+						swal(obj['msg'],'',obj['type']).then((value)=>{window.location = '../'});
 					}
 					else {
 						var html = '';
@@ -169,7 +169,13 @@ if (!isset($_SESSION['login_id'])) {
 							}
 							html += '<div class="alert alert-info" role="alert"><span class="bold">'+username+':</span> '+value.message+'</div>';
 						});
-						$("div#chat").html(html); 
+						var existing_html = $("div#chat").html();
+						if(existing_html !== html) {
+							
+							$("div#chat").html(html);
+							audio = new Audio('../assets/bell-ring.mp3');
+							audio.play();
+						}
 					}
 				}
 			});
